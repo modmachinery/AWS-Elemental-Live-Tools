@@ -21,7 +21,7 @@ sudo nano /etc/crontab
 Add the line:
 
 ```cron
-#@weekly		elemental	/usr/local/bin/cleanup-old-videos.sh > /dev/null 2>&1
+@weekly		elemental	/usr/local/bin/cleanup-old-videos.sh > /dev/null 2>&1
 ```
 
 ## SSL Fix
