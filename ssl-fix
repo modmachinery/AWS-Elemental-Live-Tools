@@ -1,0 +1,39 @@
+#!/bin/env bash
+WorkDir=/etc/httpd/conf.d
+
+printf '%s\n' \
+	"Backing up latest default Apache config..."
+sudo cp -v $WorkDir/elemental_se_apache.conf \
+	$WorkDir/elemental_se_apache.conf.bak.1
+
+## Exit script if no custom SSL Apache config is found
+if [[ ! -f $WorkDir/elemental_se_apache.conf.ssl ]]; then
+	printf '\a\n%s\n%s\n' \
+	"*** WARNING: Custom SSL Apache config was found." \
+	"    Please upload a backup copy, or create a new one."
+	exit 1
+fi
+
+printf '%s\n' \
+	"Restoring custom SSL Apache config..."
+sudo cp $WorkDir/elemental_se_apache.conf.ssl \
+	$WorkDir/elemental_se_apache.conf
+
+printf '%s\n' \
+	"Performing Apache config test..."
+if ! sudo service httpd configtest 2> >(grep -q "Syntax OK"); then
+	printf '\a\n%s\n%s\n\n' \
+		"*** WARNING: Apache config test has FAILED." \
+		"    Please see the output below for reference:"
+	sudo service httpd configtest
+	printf '\n%s\n' \
+		"Exiting without restarting Apache; SSL config was NOT restored."
+	exit 1
+fi
+
+printf '%s\n' \
+	"Apache config test passed; restarting Apache..."
+sudo service httpd restart
+
+printf '\n%s\n' \
+	"Done."
